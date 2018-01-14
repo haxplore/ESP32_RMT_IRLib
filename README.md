@@ -9,7 +9,7 @@ Protocols supported (send only):
 
 ## Example
 
-'''
+```
 #include <RMTLib.h>
 
 RMTLib RMTLib;
@@ -30,7 +30,7 @@ void loop()
   RMTLib.sendNEC(0x5743C03F);
   delay(5000);
 }
-'''
+```
 
 ## TODO
 - Repeat/toggle functionality
