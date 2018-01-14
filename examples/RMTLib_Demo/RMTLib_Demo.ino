@@ -7,9 +7,13 @@
 
 RMTLib RMTLib;
 
+const int TX_PIN = 27;
+
 void setup()
 {
   Serial.begin(115200);
+  
+  RMTLib.setTxPin(TX_PIN);
 }
 
 void loop()

@@ -74,11 +74,11 @@ void samsung_build_items(rmt_item32_t* item, uint32_t cmd_data)
 }
 
 
-void samsung_tx_init()
+void samsung_tx_init(gpio_num_t gpio_num)
 {
 	rmt_config_t rmt_tx;
     rmt_tx.channel = RMT_TX_CHANNEL;
-    rmt_tx.gpio_num = RMT_TX_GPIO_NUM;
+    rmt_tx.gpio_num = gpio_num;
     rmt_tx.mem_block_num = 1;
     rmt_tx.clk_div = RMT_CLK_DIV;
     rmt_tx.tx_config.loop_en = false;
@@ -89,16 +89,18 @@ void samsung_tx_init()
     rmt_tx.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
     rmt_tx.tx_config.idle_output_en = true;
     rmt_tx.rmt_mode = RMT_MODE_TX;
-    rmt_config(&rmt_tx);
-    rmt_driver_install(rmt_tx.channel, 0, 0);	
+	
+	rmt_tx_init(&rmt_tx);
 }
+
+// public exports
 
 void RMTLib::sendSAMSUNG(unsigned long data)
 {
 	Serial.println("sendSAMSUMG");
 	
 	vTaskDelay(10);
-	samsung_tx_init();
+	samsung_tx_init(RMTLib::tx_pin);
 	
 	esp_log_level_set(SAMSUNG_TAG, ESP_LOG_INFO);
 	ESP_LOGI(SAMSUNG_TAG, "RMT TX DATA");

@@ -21,23 +21,10 @@ extern "C" {
 /*
 * Configure SEND
 */
-void rmt_tx_init()
+void rmt_tx_init(rmt_config_t* rmt_config_tx)
 {
-    rmt_config_t rmt_tx;
-    rmt_tx.channel = RMT_TX_CHANNEL;
-    rmt_tx.gpio_num = RMT_TX_GPIO_NUM;
-    rmt_tx.mem_block_num = 1;
-    rmt_tx.clk_div = RMT_CLK_DIV;
-    rmt_tx.tx_config.loop_en = false;
-    rmt_tx.tx_config.carrier_duty_percent = RMT_CARRIER_DUTY;
-    rmt_tx.tx_config.carrier_freq_hz = RMT_CARRIER_FREQ_38;
-    rmt_tx.tx_config.carrier_level = RMT_CARRIER_LEVEL_HIGH;
-    rmt_tx.tx_config.carrier_en = RMT_TX_CARRIER_EN;
-    rmt_tx.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
-    rmt_tx.tx_config.idle_output_en = true;
-    rmt_tx.rmt_mode = RMT_MODE_TX;
-    rmt_config(&rmt_tx);
-    rmt_driver_install(rmt_tx.channel, 0, 0);	
+    rmt_config(rmt_config_tx);
+    rmt_driver_install(rmt_config_tx->channel, 0, 0);	
 }
 
 /*
@@ -56,6 +43,15 @@ void rmt_rx_init()
     rmt_rx.rx_config.idle_threshold = rmt_item32_TIMEOUT_US / 10 * (RMT_TICK_10_US);
     rmt_config(&rmt_rx);
     rmt_driver_install(rmt_rx.channel, 1000, 0);
+}
+
+/*
+ * @brief Set TX pin and channel
+ */
+void rmt_set_tx_pin(gpio_num_t gpio_num)
+{
+	//rmt_set_pin(rmt_channel_t channel, rmt_mode_t mode, gpio_num_t gpio_num)
+	rmt_set_pin(RMT_TX_CHANNEL, RMT_MODE_TX, gpio_num);
 }
 
 /*

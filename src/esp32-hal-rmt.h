@@ -33,8 +33,9 @@ ESP32 RMT
 extern "C" {
 #endif
 
-void rmt_tx_init();
+void rmt_tx_init(rmt_config_t* rmt_config_tx);
 void rmt_rx_init();
+void rmt_set_tx_pin(gpio_num_t gpio_num);
 void rmt_fill_item_level(rmt_item32_t* item, int high_us, int low_us);
 void rmt_fill_end_item(rmt_item32_t* item);
 void rmt_fill_item_level_me(rmt_item32_t* item, int length_us, bool start_idle);
