@@ -7,6 +7,11 @@ Protocols supported (send only):
 - SAMSUNG
 - RC5
 
+### What's new
+- Massive code refactoring (planning to support Arduino IDE + ESP-IDF toolchain with Eclipse)
+- Added initial receive code for NEC (IR code is decoded but bits are in the wrong order at the moment)
+- Fixed RMT_CLK_DIV, 80 instead of 100
+
 ## Example
 
 ```
@@ -42,8 +47,10 @@ void loop()
 
 ## History
 
+#### Version 0.2a
+
+
 #### Version 0.2
-Initial version
 - GPIO can now be set at the beginning
 
 #### Version 0.1

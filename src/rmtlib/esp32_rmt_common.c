@@ -1,3 +1,5 @@
+#include "esp32_rmt_common.h"
+
 #include <stdio.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
@@ -5,12 +7,18 @@
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
 #include "esp_err.h"
-#include "esp_log.h"
+//#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+//#include "esp_log.h"
+//#include "sdkconfig.h"
+
 #include "driver/rmt.h"
 #include "driver/periph_ctrl.h"
 #include "soc/rmt_reg.h"
 
-#include "esp32-hal-rmt.h"
+
+
+const char* RMTLIB_TAG = "RMTLib";
+
 
 #ifdef __cplusplus
 extern "C" {

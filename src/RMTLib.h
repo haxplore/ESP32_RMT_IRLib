@@ -8,13 +8,12 @@
 #ifndef	RMTLib_H
 #define	RMTLib_H
 
-#define SEND_NEC		1
-#define SEND_SAMSUNG	1
-#define SEND_RC5		1
+#include "rmtlib/esp32_rmt_remotes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* Include C code here */
 #ifdef __cplusplus
 }
 #endif
@@ -24,28 +23,38 @@ class RMTLib {
 		RMTLib();
 		
 		gpio_num_t tx_pin;
+		gpio_num_t rx_pin;
 		
-		void begin();
 		void send();
 		void setTxPin(unsigned short pin);
+		void setRxPin(unsigned short pin);
 		
 #if SEND_NEC
 		//void initNEC(unsigned short pin);
 		void sendNEC(unsigned long data);
 #endif
-		//void decodeNEC();
+
+#if RECEIVE_NEC
+		void decodeNEC();
+#endif
 
 #if SEND_SAMSUNG		
 		//void initSAMSUNG(unsigned short pin);
 		void sendSAMSUNG(unsigned long data);
 #endif
+
+#if RECEIVE_SAMSUNG
 		//void decodeSAMSUMG();
-	
+#endif
+
 #if SEND_RC5
 		//void initRC5(unsigned short pin);
 		void sendRC5(unsigned long data);
 #endif
+
+#if RECEIVE_RC5
 		//void decodeRC5();
+#endif
 		
 	private:
 		//

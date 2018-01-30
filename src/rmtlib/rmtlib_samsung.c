@@ -1,10 +1,25 @@
 /*
 Like NEC but a wee bit different header timings
 */
-#include "Arduino.h"
-#include "RMTLib.h"
+#include "esp32_rmt_common.h"
+#include "esp32_rmt_remotes.h"
+
+#include <stdio.h>
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "freertos/semphr.h"
+
+#include "esp_err.h"
 #include "esp_log.h"
-#include "esp32-hal-rmt.h" 
+
+#include "driver/rmt.h"
+#include "driver/periph_ctrl.h"
+#include "soc/rmt_reg.h"
+
+#include "freertos/ringbuf.h"
+
 
 #define SAMSUNG_BITS              32
 #define SAMSUNG_HEADER_HIGH_US    5000
@@ -95,12 +110,10 @@ void samsung_tx_init(gpio_num_t gpio_num)
 
 // public exports
 
-void RMTLib::sendSAMSUNG(unsigned long data)
+void rmtlib_samsung_send(unsigned long data)
 {
-	Serial.println("sendSAMSUMG");
-	
 	vTaskDelay(10);
-	samsung_tx_init(RMTLib::tx_pin);
+	samsung_tx_init(RMT_TX_GPIO_NUM);
 	
 	esp_log_level_set(SAMSUNG_TAG, ESP_LOG_INFO);
 	ESP_LOGI(SAMSUNG_TAG, "RMT TX DATA");

@@ -5,10 +5,24 @@ Bi-phase coding (aka Manchester coding)
 Constant bit time of 1.778ms (64 cycles of 36 kHz)
 RC5X command 7 bits
 */
-#include "Arduino.h"
-#include "RMTLib.h"
+#include "esp32_rmt_common.h"
+#include "esp32_rmt_remotes.h"
+
+#include <stdio.h>
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "freertos/semphr.h"
+
+#include "esp_err.h"
 #include "esp_log.h"
-#include "esp32-hal-rmt.h" 
+
+#include "driver/rmt.h"
+#include "driver/periph_ctrl.h"
+#include "soc/rmt_reg.h"
+
+#include "freertos/ringbuf.h"
 
 const char* RC5_TAG = "RC5";
 
@@ -97,12 +111,10 @@ void rc5_tx_init(gpio_num_t gpio_num)
 
 // public exports
 
-void RMTLib::sendRC5 (unsigned long data)
+void rmtlib_rc5_send(unsigned long data)
 {
-	Serial.println("sendRC5");
-	
 	vTaskDelay(10);
-	rc5_tx_init(RMTLib::tx_pin);
+	rc5_tx_init(RMT_TX_GPIO_NUM);
 	
 	esp_log_level_set(RC5_TAG, ESP_LOG_INFO);
 	ESP_LOGI(RC5_TAG, "RMT TX DATA");
