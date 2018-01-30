@@ -48,7 +48,7 @@ void loop()
 ## History
 
 #### Version 0.2a
-
+- Initial version of receive code
 
 #### Version 0.2
 - GPIO can now be set at the beginning
