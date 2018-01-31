@@ -2,15 +2,19 @@
 
 Arduino friendly IR library utilizing ESP32 RMT peripheral
 
-Protocols supported (send only):
+Protocols supported (send, limited receive):
 - NEC
 - SAMSUNG
 - RC5
 
 ### What's new
-- Massive code refactoring (planning to support Arduino IDE + ESP-IDF toolchain with Eclipse)
-- Added initial receive code for NEC (IR code is decoded but bits are in the wrong order at the moment)
-- Fixed RMT_CLK_DIV, 80 instead of 100
+IR code is now decoded correctly (NEC only for now).
+
+However, couple of items in the RMT ringbuffer report incorrect duration sometimes.
+Always data items at index 24 and 32, e.g. duration is 580ms instead of 1680. Not sure what is going on.
+Tried different IR receivers, patch cables. Will try with another ESP32.
+
+Need to do some more testing before implementing decode for the other protocols.
 
 ## Example
 
@@ -47,8 +51,14 @@ void loop()
 
 ## History
 
+#### Version 0.3
+- More reliable receive code (NEC only)
+- Added extra debugging
+
 #### Version 0.2a
-- Initial version of receive code
+- Added initial receive code for NEC (IR code is decoded but bits are reversed)
+- Massive code refactoring (planning to support Arduino IDE + ESP-IDF toolchain with Eclipse)
+- Fixed RMT_CLK_DIV, 80 instead of 100
 
 #### Version 0.2
 - GPIO can now be set at the beginning
@@ -59,7 +69,7 @@ Initial version
 - Send only
 
 ## Credits
-Based on 
+Based on ideas from
 - Arduino-IRremote library
 - ESP-IDF infrared_nec_main.c example
-- Various RMT examples on github.com
+- Various RMT examples on github

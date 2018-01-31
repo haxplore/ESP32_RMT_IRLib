@@ -20,11 +20,11 @@ void rmt_example_nec_tx_task(void *pvParameter)
 
 void rmt_example_nec_rx_task(void *pvParameter)
 {
-//	for(;;) {
+	for(;;) {
 		rmtlib_nec_receive();
 //		vTaskDelay(1000 / portTICK_PERIOD_MS);
-//		ESP_LOGI("APP", "________________ping");
-//	}
+		ESP_LOGI("APP", "________________");
+	}
 }
 
 void app_main(void)

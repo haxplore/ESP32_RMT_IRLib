@@ -8,7 +8,7 @@
 #include "freertos/semphr.h"
 #include "esp_err.h"
 //#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
-//#include "esp_log.h"
+#include "esp_log.h"
 //#include "sdkconfig.h"
 
 #include "driver/rmt.h"
@@ -84,6 +84,7 @@ inline void rmt_fill_end_item(rmt_item32_t* item)
     item->duration1 = 0;
 }
 
+
 /*
  * @brief Build register value of waveform for Manchester Encoding (bi-phase modulation) one data bit
  */
@@ -101,6 +102,33 @@ inline void rmt_fill_item_level_me(rmt_item32_t* item, int length_us, bool start
 	}
 	item->duration0 = (length_us) / 10 * RMT_TICK_10_US;    
     item->duration1 = (length_us) / 10 * RMT_TICK_10_US;
+}
+
+/*
+ * @brief Check whether duration is around target_us
+ */
+inline bool rmt_check_in_range(int duration_ticks, int target_us, int margin_us)
+{
+    if(( RMT_ITEM_DURATION(duration_ticks) < (target_us + margin_us))
+        && ( RMT_ITEM_DURATION(duration_ticks) > (target_us - margin_us))) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+/*
+ * @brief Dump waveform items
+ */
+inline void rmt_dump_items(rmt_item32_t* item, int item_num)
+{
+	ESP_LOGI(RMTLIB_TAG, "Dump %d items", item_num);
+
+	for(int i=0; i < item_num; i++) {
+		ESP_LOGI(RMTLIB_TAG, "Item %d: (%d) %dms, (%d) %dms", i, item->level0, item->duration0, item->level1, item->duration1);
+		item++;
+	}
 }
 
 #ifdef __cplusplus

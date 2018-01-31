@@ -41,8 +41,7 @@ const char* NEC_TAG = "***NEC";
 #define NEC_BIT_ZERO_LOW_US    	560			/*!< data bit 0: negative 0.56ms */
 #define NEC_BIT_END            	560         /*!< end: positive 0.56ms */
 
-#define NEC_ITEM_DURATION(d)  ((d & 0x7fff)*10/RMT_TICK_10_US)  /*!< Parse duration time from memory register value */
-#define NEC_BIT_MARGIN         	100         /*!< NEC parse error margin time */
+#define NEC_BIT_MARGIN         	60         /*!< NEC parse error margin time */
 #define NEC_DATA_ITEM_NUM   	34			/*!< NEC code item number: header + 32bit data + end */
 
 
@@ -80,7 +79,7 @@ void nec_fill_item_end(rmt_item32_t* item)
 }
 
 /*
-  @brief Build NEC 32bit waveform.
+  @brief Build NEC 32bit waveform
 */
 void nec_build_items(rmt_item32_t* item, uint32_t cmd_data)
 {
@@ -148,28 +147,15 @@ void rmtlib_nec_send(unsigned long data)
 #if RECEIVE_NEC
 
 /*
- * @brief Check whether duration is around target_us
- */
-inline bool nec_check_in_range(int duration_ticks, int target_us, int margin_us)
-{
-    if(( NEC_ITEM_DURATION(duration_ticks) < (target_us + margin_us))
-        && ( NEC_ITEM_DURATION(duration_ticks) > (target_us - margin_us))) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/*
  * @brief Check whether this value represents an NEC header
  */
 static bool nec_header_if(rmt_item32_t* item)
 {
     if((item->level0 == RMT_RX_ACTIVE_LEVEL && item->level1 != RMT_RX_ACTIVE_LEVEL)
-        && nec_check_in_range(item->duration0, NEC_HEADER_HIGH_US, NEC_BIT_MARGIN)
-        && nec_check_in_range(item->duration1, NEC_HEADER_LOW_US, NEC_BIT_MARGIN)) {
+        && rmt_check_in_range(item->duration0, NEC_HEADER_HIGH_US, NEC_BIT_MARGIN)
+        && rmt_check_in_range(item->duration1, NEC_HEADER_LOW_US, NEC_BIT_MARGIN)) {
 
-    	ESP_LOGI(NEC_TAG, "Header: (%d) %dms, (%d) %dms", item->level0, item->duration0, item->level1, item->duration1);
+    	//ESP_LOGI(NEC_TAG, "Header: (%d) %dms, (%d) %dms", item->level0, item->duration0, item->level1, item->duration1);
         return true;
     }
     return false;
@@ -181,10 +167,10 @@ static bool nec_header_if(rmt_item32_t* item)
 static bool nec_bit_one_if(rmt_item32_t* item)
 {
     if((item->level0 == RMT_RX_ACTIVE_LEVEL && item->level1 != RMT_RX_ACTIVE_LEVEL)
-        && nec_check_in_range(item->duration0, NEC_BIT_ONE_HIGH_US, NEC_BIT_MARGIN)
-        && nec_check_in_range(item->duration1, NEC_BIT_ONE_LOW_US, NEC_BIT_MARGIN)) {
+        && rmt_check_in_range(item->duration0, NEC_BIT_ONE_HIGH_US, NEC_BIT_MARGIN)
+        && rmt_check_in_range(item->duration1, NEC_BIT_ONE_LOW_US, NEC_BIT_MARGIN)) {
 
-    	ESP_LOGI(NEC_TAG, "One: (%d) %dms, (%d) %dms", item->level0, item->duration0, item->level1, item->duration1);
+    	//ESP_LOGI(NEC_TAG, "One: (%d) %dms, (%d) %dms", item->level0, item->duration0, item->level1, item->duration1);
         return true;
     }
     return false;
@@ -196,15 +182,29 @@ static bool nec_bit_one_if(rmt_item32_t* item)
 static bool nec_bit_zero_if(rmt_item32_t* item)
 {
     if((item->level0 == RMT_RX_ACTIVE_LEVEL && item->level1 != RMT_RX_ACTIVE_LEVEL)
-        && nec_check_in_range(item->duration0, NEC_BIT_ZERO_HIGH_US, NEC_BIT_MARGIN)
-        && nec_check_in_range(item->duration1, NEC_BIT_ZERO_LOW_US, NEC_BIT_MARGIN)) {
+        && rmt_check_in_range(item->duration0, NEC_BIT_ZERO_HIGH_US, NEC_BIT_MARGIN)
+        && rmt_check_in_range(item->duration1, NEC_BIT_ZERO_LOW_US, NEC_BIT_MARGIN)) {
 
-    	ESP_LOGI(NEC_TAG, "Zero: (%d) %dms, (%d) %dms", item->level0, item->duration0, item->level1, item->duration1);
+    	//ESP_LOGI(NEC_TAG, "Zero: (%d) %dms, (%d) %dms", item->level0, item->duration0, item->level1, item->duration1);
         return true;
     }
     return false;
 }
 
+/*
+ * @brief Check whether this value represents an NEC end marker
+ */
+static bool nec_end_if(rmt_item32_t* item)
+{
+    if((item->level0 == RMT_RX_ACTIVE_LEVEL && item->level1 != RMT_RX_ACTIVE_LEVEL)
+        && rmt_check_in_range(item->duration0, NEC_BIT_END, NEC_BIT_MARGIN)
+        && rmt_check_in_range(item->duration1, 0, NEC_BIT_MARGIN)) {
+
+    	//ESP_LOGI(NEC_TAG, "Zero: (%d) %dms, (%d) %dms", item->level0, item->duration0, item->level1, item->duration1);
+        return true;
+    }
+    return false;
+}
 
 /*
  * @brief Parse NEC 32 bit waveform to address and command.
@@ -224,15 +224,19 @@ static int nec_parse_items(rmt_item32_t* item, int item_num, uint32_t* cmd_data)
     if(!nec_header_if(item++)) {
     	ESP_LOGI(NEC_TAG, "HEADER ERROR");
         return -1;
+    } else {
+    	i++;
     }
 
+    uint32_t mask = 0x80000000;
     uint32_t decoded = 0;
+
     for (int j = 0; j < NEC_BITS; j++) {
 
     	if(nec_bit_one_if(item)) {
-    		decoded |= (1 << j);
+    		decoded |= (mask >> j);
     	} else if (nec_bit_zero_if(item)) {
-    		decoded |= (0 << j);
+    		decoded |= 0 & (mask >> j);
         } else {
         	ESP_LOGI(NEC_TAG, "BIT ERROR");
             return -1;
@@ -241,10 +245,18 @@ static int nec_parse_items(rmt_item32_t* item, int item_num, uint32_t* cmd_data)
     	i++;
     }
 
+    if (!nec_end_if(item++)) {
+    	ESP_LOGI(NEC_TAG, "END MARKER ERROR");
+    	return -1;
+    } else {
+    	i++;
+    }
+
     *cmd_data = decoded;
 
     return i;
 }
+
 
 /* ******************************************************************************* */
 
@@ -267,7 +279,7 @@ static void nec_rx_init()
     rmt_rx.rx_config.idle_threshold = rmt_item32_TIMEOUT_US / 10 * (RMT_TICK_10_US);
 
     rmt_config(&rmt_rx);
-    rmt_driver_install(rmt_rx.channel, 1000, 0);
+    rmt_driver_install(rmt_rx.channel, 2000, 0);
 }
 
 /*
@@ -275,6 +287,7 @@ static void nec_rx_init()
  */
 void rmtlib_nec_receive()
 {
+	vTaskDelay(10);
 	ESP_LOGI(NEC_TAG, "RMT RX DATA");
 	nec_rx_init();
 
@@ -290,19 +303,23 @@ void rmtlib_nec_receive()
         //try to receive data from ringbuffer.
         //RMT driver will push all the data it receives to its ringbuffer.
         //We just need to parse the value and return the spaces of ringbuffer.
-        rmt_item32_t* item = (rmt_item32_t*) xRingbufferReceive(rb, &rx_size, 1000);
+        rmt_item32_t* item = (rmt_item32_t*) xRingbufferReceive(rb, &rx_size, 2000);
         if(item) {
-        	ESP_LOGI(NEC_TAG, "has item - size: %d", rx_size);
+        	ESP_LOGI(NEC_TAG, "Received waveform - buffer size: %d (%d items)", rx_size, rx_size / 4);
+
+        	rmt_dump_items(item, rx_size / 4);
 
             uint32_t rmt_data;
+            int res = nec_parse_items(item, rx_size / 4, &rmt_data);
+            ESP_LOGI(NEC_TAG, "IR CODE: 0x%08x", rmt_data);
+            /*
             int offset = 0;
-
             while(1) {
                 //parse data value from ringbuffer.
                 int res = nec_parse_items(item + offset, rx_size / 4 - offset, &rmt_data);
                 ESP_LOGI(NEC_TAG, "RMT RCV --- res after parse: %d", res);
 
-                if(res > 0) {
+                if(res == NEC_DATA_ITEM_NUM) {
                     offset += res + 1;
                     ESP_LOGI(NEC_TAG, "RMT RCV --- IRCODE: 0x%08x", rmt_data);
                 } else {
@@ -310,15 +327,19 @@ void rmtlib_nec_receive()
                     break;
                 }
             }
+			*/
 
             //after parsing the data, free ringbuffer.
             vRingbufferReturnItem(rb, (void*) item);
         } else {
+        	ESP_LOGI(NEC_TAG, "ELSE (ITEM)");
             break;
         }
     }
 
-    vTaskDelete(NULL);
+    ESP_LOGI(NEC_TAG, "TASK DELETE");
+    //vTaskDelete(NULL);
+    rmt_driver_uninstall(RMT_RX_CHANNEL);
 }
 
 

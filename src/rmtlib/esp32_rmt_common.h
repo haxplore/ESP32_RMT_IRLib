@@ -43,8 +43,12 @@ void rmt_rx_init();
 void rmt_set_tx_pin(gpio_num_t gpio_num);
 void rmt_fill_item_level(rmt_item32_t* item, int high_us, int low_us);
 void rmt_fill_end_item(rmt_item32_t* item);
+// manchester encoding
 void rmt_fill_item_level_me(rmt_item32_t* item, int length_us, bool start_idle);
 
+//
+bool rmt_check_in_range(int duration_ticks, int target_us, int margin_us);
+void rmt_dump_items(rmt_item32_t* item, int item_num);
 //
 void example_nec_rx();
 
