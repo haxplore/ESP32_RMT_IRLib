@@ -60,11 +60,27 @@ void RMTLib::sendSAMSUNG(unsigned long data)
 }
 #endif
 
+#ifdef RECEIVE_SAMSUNG
+void RMTLib::decodeSAMSUNG()
+{
+	Serial.println("**decodeSAMSUNG");
+	rmtlib_samsung_receive();
+}
+#endif
+
 #if SEND_RC5
 void RMTLib::sendRC5 (unsigned long data)
 {
 	Serial.println("sendRC5");
 	rmtlib_rc5_send(data);
+}
+#endif
+
+#ifdef RECEIVE_RC5
+void RMTLib::decodeRC5()
+{
+	Serial.println("**decodeRC5");
+	rmtlib_rc5_receive();
 }
 #endif
 

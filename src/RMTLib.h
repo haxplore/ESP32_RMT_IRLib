@@ -44,7 +44,7 @@ class RMTLib {
 #endif
 
 #if RECEIVE_SAMSUNG
-		//void decodeSAMSUMG();
+		void decodeSAMSUNG();
 #endif
 
 #if SEND_RC5
@@ -53,7 +53,7 @@ class RMTLib {
 #endif
 
 #if RECEIVE_RC5
-		//void decodeRC5();
+		void decodeRC5();
 #endif
 		
 	private:

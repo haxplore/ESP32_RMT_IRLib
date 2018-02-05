@@ -7,6 +7,7 @@ ESP32 RMT
 - each item meant to be a pair of pulse and idle periods (mark & silent) representing a bit in the waveform
 - a zero period is interpreted as an end-marker: the transmitter will stop transmitting once it has read this
 */
+
 #include "driver/rmt.h"
 
 #ifndef	ESP32_HAL_RMT_H

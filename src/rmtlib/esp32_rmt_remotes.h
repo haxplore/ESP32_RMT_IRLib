@@ -10,13 +10,15 @@
 #define SEND_NEC			1
 #define RECEIVE_NEC			1
 #define SEND_SAMSUNG		1
-#define RECEIVE_SAMSUNG		0
+#define RECEIVE_SAMSUNG		1
 #define SEND_RC5			1
-#define RECEIVE_RC5			0
+#define RECEIVE_RC5			1
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+uint32_t remote_code;
 
 #ifdef SEND_NEC
 void rmtlib_nec_send(unsigned long data);
@@ -30,8 +32,16 @@ void rmtlib_nec_receive();
 void rmtlib_samsung_send(unsigned long data);
 #endif
 
+#ifdef RECEIVE_SAMSUNG
+void rmtlib_samsung_receive();
+#endif
+
 #ifdef SEND_RC5
 void rmtlib_rc5_send(unsigned long data);
+#endif
+
+#ifdef RECEIVE_RC5
+void rmtlib_rc5_receive();
 #endif
 
 #ifdef __cplusplus

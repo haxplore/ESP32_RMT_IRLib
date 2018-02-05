@@ -21,9 +21,10 @@ void rmt_example_nec_tx_task(void *pvParameter)
 void rmt_example_nec_rx_task(void *pvParameter)
 {
 	for(;;) {
-		rmtlib_nec_receive();
+		//rmtlib_rc5_receive();
+		rmtlib_samsung_receive();
 //		vTaskDelay(1000 / portTICK_PERIOD_MS);
-		ESP_LOGI("APP", "________________");
+		ESP_LOGI("Task", "________________");
 	}
 }
 

@@ -15,8 +15,6 @@
 #include "driver/periph_ctrl.h"
 #include "soc/rmt_reg.h"
 
-
-
 const char* RMTLIB_TAG = "RMTLib";
 
 

@@ -8,13 +8,11 @@ Protocols supported (send, limited receive):
 - RC5
 
 ### What's new
-IR code is now decoded correctly (NEC only for now).
+IR code is now decoded correctly (NEC and SAMSUNG, RC5 needs a bit of extra work).
 
-However, couple of items in the RMT ringbuffer report incorrect duration sometimes.
-Always data items at index 24 and 32, e.g. duration is 580ms instead of 1680. Not sure what is going on.
-Tried different IR receivers, patch cables. Will try with another ESP32.
+NEC sometimes decodes odd values, but might be down to config or cheap remotes.
 
-Need to do some more testing before implementing decode for the other protocols.
+I am happy with the prototype. This is the last commit before a big refactoring.
 
 ## Example
 
@@ -42,14 +40,17 @@ void loop()
 ```
 
 ## TODO
+- Receive and decode (Arduino)
 - Repeat/toggle functionality
-- Receive and decode
 - Refactoring current prototype level code
 
 ## Planned
 - Examples to send/decode IR code through WIFI (Web, MQTT or CoAP)
 
 ## History
+
+#### Version 0.3b
+- Added SAMSUNG decode and started on RC5 decode
 
 #### Version 0.3
 - More reliable receive code (NEC only)

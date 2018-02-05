@@ -4,8 +4,9 @@ Address and command are transmitted twice for reliability. (32bit)
 Extended mode available, doubling the address size.
 Pulse distance modulation.
 Carrier frequency of 38kHz.
+Header is 9000 + 4500
 Bit time of 1.125ms or 2.25ms
-Each pulse is a 560µs long 38kHz carrier burst (about 21 cycles). 
+Each pulse is a 560us long 38kHz carrier burst (about 21 cycles).
 A logical "1" takes 2.25ms to transmit, while a logical "0" is only half of that, being 1.125ms. 
 The recommended carrier duty-cycle is 1/4 or 1/3.
 */
@@ -29,7 +30,7 @@ The recommended carrier duty-cycle is 1/4 or 1/3.
 
 #include "freertos/ringbuf.h"
 
-const char* NEC_TAG = "***NEC";
+const char* NEC_TAG = "NEC";
 
 /* NEC Protocol */
 #define NEC_BITS              	32
@@ -44,48 +45,41 @@ const char* NEC_TAG = "***NEC";
 #define NEC_BIT_MARGIN         	60         /*!< NEC parse error margin time */
 #define NEC_DATA_ITEM_NUM   	34			/*!< NEC code item number: header + 32bit data + end */
 
-
-//#if SEND_NEC
 /*
- * @brief Generate NEC header value: active 9ms + negative 4.5ms
+ * SEND
  */
+
+#if SEND_NEC
+
 void nec_fill_item_header(rmt_item32_t* item)
 {
     rmt_fill_item_level(item, NEC_HEADER_HIGH_US, NEC_HEADER_LOW_US);
 }
 
-/*
- * @brief Generate NEC data bit 1: positive 0.56ms + negative 1.69ms
- */
 void nec_fill_item_bit_one(rmt_item32_t* item)
 {
     rmt_fill_item_level(item, NEC_BIT_ONE_HIGH_US, NEC_BIT_ONE_LOW_US);
 }
 
-/*
- * @brief Generate NEC data bit 0: positive 0.56ms + negative 0.56ms
- */
 void nec_fill_item_bit_zero(rmt_item32_t* item)
 {
     rmt_fill_item_level(item, NEC_BIT_ZERO_HIGH_US, NEC_BIT_ZERO_LOW_US);
 }
 
-/*
- * @brief Generate NEC end signal: positive 0.56ms
- */
 void nec_fill_item_end(rmt_item32_t* item)
 {
     rmt_fill_item_level(item, NEC_BIT_END, 0x7fff);
 }
 
-/*
-  @brief Build NEC 32bit waveform
-*/
 void nec_build_items(rmt_item32_t* item, uint32_t cmd_data)
 {
   nec_fill_item_header(item++);
   
-  uint32_t mask = 0x80000000;
+  // parse from left to right 32 bits (0x80000000)
+  uint32_t mask = 0x01;
+  mask <<= NEC_BITS - 1;
+  //uint32_t mask = 0x80000000;
+
   for (int j = 0; j < 32; j++) {
     if (cmd_data & mask) {
       nec_fill_item_bit_one(item);
@@ -98,7 +92,6 @@ void nec_build_items(rmt_item32_t* item, uint32_t cmd_data)
 
   nec_fill_item_end(item);
 }
-
 
 void nec_tx_init(gpio_num_t gpio_num)
 {
@@ -118,8 +111,6 @@ void nec_tx_init(gpio_num_t gpio_num)
 	
 	rmt_tx_init(&rmt_tx);
 }
-
-// public exports
 
 void rmtlib_nec_send(unsigned long data)
 {
@@ -142,13 +133,14 @@ void rmtlib_nec_send(unsigned long data)
 	free(item);
 }
 
-/************************************************************************************/
+#endif
+
+/*
+ * RECEIVE
+ */
 
 #if RECEIVE_NEC
 
-/*
- * @brief Check whether this value represents an NEC header
- */
 static bool nec_header_if(rmt_item32_t* item)
 {
     if((item->level0 == RMT_RX_ACTIVE_LEVEL && item->level1 != RMT_RX_ACTIVE_LEVEL)
@@ -161,9 +153,6 @@ static bool nec_header_if(rmt_item32_t* item)
     return false;
 }
 
-/*
- * @brief Check whether this value represents an NEC data bit 1
- */
 static bool nec_bit_one_if(rmt_item32_t* item)
 {
     if((item->level0 == RMT_RX_ACTIVE_LEVEL && item->level1 != RMT_RX_ACTIVE_LEVEL)
@@ -176,9 +165,6 @@ static bool nec_bit_one_if(rmt_item32_t* item)
     return false;
 }
 
-/*
- * @brief Check whether this value represents an NEC data bit 0
- */
 static bool nec_bit_zero_if(rmt_item32_t* item)
 {
     if((item->level0 == RMT_RX_ACTIVE_LEVEL && item->level1 != RMT_RX_ACTIVE_LEVEL)
@@ -191,9 +177,6 @@ static bool nec_bit_zero_if(rmt_item32_t* item)
     return false;
 }
 
-/*
- * @brief Check whether this value represents an NEC end marker
- */
 static bool nec_end_if(rmt_item32_t* item)
 {
     if((item->level0 == RMT_RX_ACTIVE_LEVEL && item->level1 != RMT_RX_ACTIVE_LEVEL)
@@ -206,14 +189,10 @@ static bool nec_end_if(rmt_item32_t* item)
     return false;
 }
 
-/*
- * @brief Parse NEC 32 bit waveform to address and command.
- */
 static int nec_parse_items(rmt_item32_t* item, int item_num, uint32_t* cmd_data)
 {
-	ESP_LOGI(NEC_TAG, "Parse %d items", item_num);
+	//ESP_LOGI(NEC_TAG, "Parse %d items", item_num);
 
-    //int w_len = item_num;
     if(item_num < NEC_DATA_ITEM_NUM) {
     	ESP_LOGI(NEC_TAG, "ITEM NUMBER ERROR");
         return -1;
@@ -257,12 +236,6 @@ static int nec_parse_items(rmt_item32_t* item, int item_num, uint32_t* cmd_data)
     return i;
 }
 
-
-/* ******************************************************************************* */
-
-/*
- * @brief RMT receiver initialization
- */
 static void nec_rx_init()
 {
 	// idle_treshhold: In receive mode, when no edge is detected on the input signal for longer
@@ -282,9 +255,6 @@ static void nec_rx_init()
     rmt_driver_install(rmt_rx.channel, 2000, 0);
 }
 
-/*
- *
- */
 void rmtlib_nec_receive()
 {
 	vTaskDelay(10);
@@ -341,6 +311,5 @@ void rmtlib_nec_receive()
     //vTaskDelete(NULL);
     rmt_driver_uninstall(RMT_RX_CHANNEL);
 }
-
 
 #endif

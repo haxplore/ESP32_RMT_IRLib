@@ -6,4 +6,3 @@ build/
 .settings/
 .cproject
 .project
-sdkconfig*
