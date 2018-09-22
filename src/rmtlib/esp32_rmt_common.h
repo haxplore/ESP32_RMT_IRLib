@@ -34,6 +34,7 @@ ESP32 RMT
 
 #define rmt_item32_TIMEOUT_US  	9500   /*!< RMT receiver timeout value(us) */
 //
+#define RMT_TX_WAIT  150   /* Max ticks before send timeout */
 
 #ifdef __cplusplus
 extern "C" {

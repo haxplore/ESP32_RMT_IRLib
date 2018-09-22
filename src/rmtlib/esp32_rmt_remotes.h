@@ -18,8 +18,6 @@
 extern "C" {
 #endif
 
-uint32_t remote_code;
-
 #ifdef SEND_NEC
 void rmtlib_nec_send(unsigned long data);
 #endif
