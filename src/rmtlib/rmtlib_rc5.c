@@ -120,7 +120,7 @@ void rmtlib_rc5_send(unsigned long data)
 
 	int item_num = RC5_DATA_ITEM_NUM * RMT_TX_DATA_NUM;
 	rmt_write_items(RMT_TX_CHANNEL, item, item_num, true);
-	rmt_wait_tx_done(RMT_TX_CHANNEL);
+	rmt_wait_tx_done(RMT_TX_CHANNEL,RMT_TX_WAIT);
 	free(item);
 }
 

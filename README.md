@@ -74,3 +74,4 @@ Based on ideas from
 - Arduino-IRremote library
 - ESP-IDF infrared_nec_main.c example
 - Various RMT examples on github
+# IR32

@@ -117,7 +117,7 @@ void rmtlib_samsung_send(unsigned long data)
 
 	int item_num = SAMSUNG_DATA_ITEM_NUM * RMT_TX_DATA_NUM;
 	rmt_write_items(RMT_TX_CHANNEL, item, item_num, true);
-	rmt_wait_tx_done(RMT_TX_CHANNEL);
+	rmt_wait_tx_done(RMT_TX_CHANNEL,RMT_TX_WAIT);
 	free(item);
 }
 
@@ -258,7 +258,6 @@ void rmtlib_samsung_receive()
             uint32_t rmt_data;
             int res = samsung_parse_items(item, rx_size / 4, &rmt_data);
             ESP_LOGI(SAMSUNG_TAG, "IR CODE: 0x%08x", rmt_data);
-			remote_code = rmt_data;
 
             vRingbufferReturnItem(rb, (void*) item);
         } else {
